@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">EcoLution</string>
+    <string name="placeholder_search">Cari</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_favorite">Favorite</string>
+    <string name="menu_maps">Maps</string>
+    <string name="menu_profile">Profile</string>
 </resources>
