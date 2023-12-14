@@ -1,5 +1,6 @@
 package com.strawhead.ecolution
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Place
@@ -30,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +46,7 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.strawhead.ecolution.model.BottomBarItem
 import com.strawhead.ecolution.signin.GoogleUiAuthClient
 import com.strawhead.ecolution.ui.navigation.Screen
+import com.strawhead.ecolution.ui.screen.addhome.AddScreen
 import com.strawhead.ecolution.ui.screen.home.HomeScreen
 import com.strawhead.ecolution.ui.screen.profile.ProfileScreen
 import com.strawhead.ecolution.ui.screen.profile.ProfileSignInScreen
@@ -150,6 +154,14 @@ fun EcoLutionApp(
                     }
                 )
             }
+
+            composable(Screen.Add.route) {
+                if(googleAuthUiClient.getSignedInUser() == null) {
+                    navController.navigate(Screen.Profile.route)
+                }
+
+                AddScreen()
+            }
         }
     }
 }
@@ -162,6 +174,13 @@ fun BottomBar(
         shape = RoundedCornerShape(20.dp)
     )
 ) {
+    val context = LocalContext.current
+    val googleAuthUiClient by lazy {
+        GoogleUiAuthClient(
+            context = context,
+            oneTapClient = Identity.getSignInClient(context)
+        )
+    }
     NavigationBar(
         containerColor = Color.White,
         modifier = modifier,
@@ -179,8 +198,8 @@ fun BottomBar(
                 icon = Icons.Default.Favorite
             ),
             BottomBarItem(
-                title = stringResource(R.string.menu_maps),
-                icon = Icons.Default.Place
+                title = "Add",
+                icon = Icons.Default.AddCircle
             ),
             BottomBarItem(
                 title = stringResource(R.string.menu_profile),
@@ -207,12 +226,32 @@ fun BottomBar(
                             it.title == currentRoute
                                },
                 onClick = {
-                    navController.navigate(it.title) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    if (it.title == "Add") {
+                        if(googleAuthUiClient.getSignedInUser() == null) {
+                            navController.navigate(Screen.Profile.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                restoreState = true
+                                launchSingleTop = true
+                            }
+                        } else {
+                            navController.navigate(it.title) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                restoreState = true
+                                launchSingleTop = true
+                            }
                         }
-                        restoreState = true
-                        launchSingleTop = true
+                    } else {
+                        navController.navigate(it.title) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            restoreState = true
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
