@@ -38,14 +38,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.android.gms.auth.api.identity.Identity
 import com.strawhead.ecolution.model.BottomBarItem
 import com.strawhead.ecolution.signin.GoogleUiAuthClient
 import com.strawhead.ecolution.ui.navigation.Screen
+import com.strawhead.ecolution.ui.screen.addhome.AddMapScreen
 import com.strawhead.ecolution.ui.screen.addhome.AddScreen
 import com.strawhead.ecolution.ui.screen.home.HomeScreen
 import com.strawhead.ecolution.ui.screen.profile.ProfileScreen
@@ -74,7 +77,10 @@ fun EcoLutionApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
-        bottomBar = {  BottomBar(navController) },
+        bottomBar = {
+            if (currentRoute?.take(3) != "add") {
+                BottomBar(navController)
+            } },
         modifier = modifier
     ) { innerPadding ->
         NavHost(
@@ -155,12 +161,30 @@ fun EcoLutionApp(
                 )
             }
 
-            composable(Screen.Add.route) {
+            composable(route = Screen.Add.route) {
                 if(googleAuthUiClient.getSignedInUser() == null) {
                     navController.navigate(Screen.Profile.route)
                 }
 
-                AddScreen()
+                AddScreen(navigateToMap = {Latitude, Longitude ->
+                    if (Latitude == null && Longitude == null) {
+                        navController.navigate("add")
+                    } else {
+                        navController.navigate("add/" + Latitude.toString() + "/" + Longitude.toString())
+                    } }, navigateBack = {navController.popBackStack()})
+            }
+
+            composable("add/{prevLat}/{prevLong}",
+                arguments = listOf(navArgument("prevLat") {
+                    type = NavType.StringType
+                }, navArgument("prevLong") {
+                    type = NavType.StringType
+                })) {
+                    AddMapScreen(navigateToAdd = {navController.popBackStack()}, prevLat = it.arguments?.getString("prevLat")!!.toDouble(), prevLong = it.arguments?.getString("prevLong")!!.toDouble())
+            }
+
+            composable("add") {
+                AddMapScreen(navigateToAdd = {navController.popBackStack()})
             }
         }
     }
@@ -221,9 +245,9 @@ fun BottomBar(
                     Text(it.title)
                 },
                 selected = if (currentRoute != null) {
-                            it.title.uppercase() == currentRoute.uppercase()
+                            it.title.uppercase().take(3) == currentRoute.uppercase().take(3)
                         } else {
-                            it.title == currentRoute
+                            it.title.take(3) == currentRoute.toString().take(3)
                                },
                 onClick = {
                     if (it.title == "Add") {
