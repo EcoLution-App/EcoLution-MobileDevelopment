@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.strawhead.ecolution.R
+import com.strawhead.ecolution.signin.UserData
 import com.strawhead.ecolution.ui.ViewModelFactory
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -73,7 +74,8 @@ fun Banner(
 }
 
 @Composable
-fun AddScreen(navigateToMap: (Double?, Double?) -> Unit,
+fun AddScreen(userData: UserData?,
+              navigateToMap: (Double?, Double?) -> Unit,
               viewModel: AddHomeViewModel = viewModel(
                   factory = ViewModelFactory()
               ),
@@ -87,7 +89,8 @@ fun AddScreen(navigateToMap: (Double?, Double?) -> Unit,
     var harga by remember { mutableStateOf(hargas) }
     var deskripsi by remember { mutableStateOf(deskripsis) }
     val openDialog = remember { mutableStateOf(false) }
-
+    val sellerName = userData!!.username
+    val sellerEmail = userData!!.email
     val context = LocalContext.current
     // scope
     val scope = rememberCoroutineScope()
@@ -95,6 +98,9 @@ fun AddScreen(navigateToMap: (Double?, Double?) -> Unit,
 
     // get saved email
     val savedAddress = dataStore.getAddress.collectAsState(initial = "")
+    val savedLat = dataStore.getLang.collectAsState(initial = "")
+    val savedLong = dataStore.getLong.collectAsState(initial = "")
+    val kecamatan = dataStore.getKecamatan.collectAsState(initial = "")
     var lokasi by remember { mutableStateOf("") }
 
     var imageUri by remember {
@@ -119,6 +125,9 @@ fun AddScreen(navigateToMap: (Double?, Double?) -> Unit,
                 TextButton(onClick = {
                     scope.launch {
                         dataStore.saveAddress("")
+                        dataStore.saveLat("")
+                        dataStore.saveKecamatan("")
+                        dataStore.saveLong("")
                     }
                     navigateBack()
                 })
@@ -208,9 +217,9 @@ fun AddScreen(navigateToMap: (Double?, Double?) -> Unit,
                         interactionSource.interactions.collect {
                             if (it is PressInteraction.Release) {
                                 if (savedAddress.value!! != "") {
-                                    var geocoder = Geocoder(context, Locale.getDefault())
-                                    val coord = geocoder.getFromLocationName(savedAddress.value!!, 1)
-                                    navigateToMap(coord?.get(0)?.getLatitude()!!, coord?.get(0)?.getLongitude()!!)
+//                                    var geocoder = Geocoder(context, Locale.getDefault())
+//                                    val coord = geocoder.getFromLocationName(savedAddress.value!!, 1)
+                                    navigateToMap(savedLat.value!!.toDouble(), savedLong.value!!.toDouble())
                                 } else {
                                     navigateToMap(null, null)
                                 }
@@ -236,7 +245,17 @@ fun AddScreen(navigateToMap: (Double?, Double?) -> Unit,
                 .fillMaxWidth()
         )
         Button(colors = ButtonDefaults.buttonColors(Color(0xFF425A75)),
-            onClick = { /*TODO*/ },
+            onClick = {
+                if(savedAddress.value!! != "") {
+                    Log.d("Data rumah -> Nama tempat : ", nama)
+                    Log.d("Data rumah -> Harga : ", harga)
+                    Log.d("Data rumah -> Alamat panjang : ", savedAddress.value!!)
+                    Log.d("Data rumah -> Kecamatan : ", kecamatan.value!!)
+                    Log.d("Data rumah -> Deskripsi : ", deskripsi)
+                    Log.d("Data rumah -> Nama penjual : ", sellerName!!)
+                    Log.d("Data rumah -> Email penjual : ", sellerEmail!!)
+                }
+            },
             shape = RoundedCornerShape(20),
             modifier = Modifier
                 .padding(start = 20.dp, end = 20.dp)
@@ -250,5 +269,5 @@ fun AddScreen(navigateToMap: (Double?, Double?) -> Unit,
 @Preview(showBackground = true, device = Devices.PIXEL_4)
 @Composable
 fun PreviewAdd() {
-    AddScreen(navigateToMap = {Double, Doubles -> }, navigateBack = {})
+    AddScreen(navigateToMap = {Double, Doubles -> }, navigateBack = {}, userData = null)
 }

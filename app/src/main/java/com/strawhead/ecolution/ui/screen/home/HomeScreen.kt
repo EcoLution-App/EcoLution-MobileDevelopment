@@ -1,19 +1,22 @@
 package com.strawhead.ecolution.ui.screen.home
 
+import android.icu.text.NumberFormat
+import android.icu.util.Currency
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,26 +24,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.strawhead.ecolution.R
 import com.strawhead.ecolution.ui.components.Search
+import com.strawhead.ecolution.ui.screen.addhome.LocationDataStore
+import com.strawhead.ecolution.ui.screen.homeinfo.HomeInfoDataStore
 import com.strawhead.ecolution.ui.tempmodel.PlaceInfo
-import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.shadow
 import com.strawhead.ecolution.ui.tempmodel.dummyPlaceInfo
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navigateToPlace: () -> Unit) {
     Column() {
         Banner()
         Text(
@@ -48,7 +55,7 @@ fun HomeScreen() {
             modifier = Modifier.padding(top = 20.dp, start = 20.dp, end = 20.dp),
             fontWeight = FontWeight.Bold,
         )
-        NearYouRow(dummyPlaceInfo, Modifier.padding(top = 20.dp, bottom = 20.dp))
+        NearYouRow(dummyPlaceInfo, Modifier.padding(top = 20.dp, bottom = 20.dp), navigateToPlace = {navigateToPlace()})
         Text(
             text = "Based on your preference",
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
@@ -77,6 +84,8 @@ fun RecommendedItem(
     place: PlaceInfo,
     modifier: Modifier = Modifier
 ) {
+    val myIndonesianLocale = Locale("in", "ID")
+    val format: NumberFormat = NumberFormat.getCurrencyInstance(myIndonesianLocale)
     Card (
         shape = MaterialTheme.shapes.medium,
         modifier = modifier.padding(vertical = 8.dp, horizontal = 8.dp),
@@ -97,20 +106,20 @@ fun RecommendedItem(
             )
             Column () {
                 Text(
-                    text = place.placeName,
+                    text = place.title,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp, bottom = 10.dp, start = 16.dp)
                 )
                 Text(
-                    text = place.placeAddress,
+                    text = place.address.take(26)+"...",
                     fontWeight = FontWeight.Light,
                     modifier = Modifier
                         .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
                 )
                 Text(
-                    text = place.distance.toString() + " km",
+                    text = format.format(place.price.toInt()).dropLast(3),
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
@@ -122,8 +131,12 @@ fun RecommendedItem(
 @Composable
 fun NearYouRow(
     listPlace: List<PlaceInfo>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigateToPlace: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = HomeInfoDataStore(context)
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -132,8 +145,21 @@ fun NearYouRow(
         items(listPlace) { place ->
             NearYouItem(place, Modifier.shadow(
                 elevation = 10.dp,
-                shape = RoundedCornerShape(8.dp)
-            ))
+                shape = RoundedCornerShape(8.dp))
+                .clickable {
+                    scope.launch {
+                        dataStore.saveHomeInfo("title", place.title)
+                        dataStore.saveHomeInfo("price", place.price)
+                        dataStore.saveHomeInfo("address", place.address)
+                        dataStore.saveHomeInfo("kecamatan", place.kecamatan)
+                        dataStore.saveHomeInfo("description", place.description)
+                        dataStore.saveHomeInfo("sellerName", place.sellerName)
+                        dataStore.saveHomeInfo("sellerEmail", place.sellerEmail)
+                    }
+                    navigateToPlace()
+                    Log.d("hahha", "hahaha")
+                }
+            )
         }
     }
 }
@@ -154,6 +180,8 @@ fun NearYouItem(
     place: PlaceInfo,
     modifier: Modifier = Modifier,
 ) {
+    val myIndonesianLocale = Locale("in", "ID")
+    val format: NumberFormat = NumberFormat.getCurrencyInstance(myIndonesianLocale)
     Card (
         modifier = modifier.width(140.dp),
         shape = RoundedCornerShape(8.dp),
@@ -173,7 +201,7 @@ fun NearYouItem(
             )
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
-                    text = place.placeName,
+                    text = place.title,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleMedium.copy(
@@ -181,13 +209,13 @@ fun NearYouItem(
                     ),
                 )
                 Text(
-                    text = place.placeAddress.substring(0, 13) + "...",
+                    text = place.address.substring(0, 13) + "...",
                     maxLines = 1,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Light,
                 )
                 Text(
-                    text = place.distance.toString() + " km",
+                    text = format.format(place.price.toInt()).dropLast(3),
                     style = MaterialTheme.typography.titleSmall,
                 )
             }
@@ -198,23 +226,23 @@ fun NearYouItem(
 @Preview(showBackground = true, device = Devices.PIXEL_4)
 @Composable
 fun PreviewHome() {
-    HomeScreen()
+    HomeScreen({})
 }
 
-@Composable
-@Preview(showBackground = true)
-fun NearYouItemPreview() {
-    NearYouItem(
-        place = PlaceInfo(R.drawable.photo_rumah, "FNAF Pizzeria", "Backroom street number 420", 6.9),
-        modifier = Modifier.padding(8.dp)
-    )
-}
-
-@Composable
-@Preview(showBackground = true)
-fun RecommendedItemPreview() {
-    RecommendedItem(
-        place = PlaceInfo(R.drawable.photo_rumah, "FNAF Pizzeria", "Backroom street number 420", 6.9),
-        modifier = Modifier.padding(8.dp)
-    )
-}
+//@Composable
+//@Preview(showBackground = true)
+//fun NearYouItemPreview() {
+//    NearYouItem(
+//        place = PlaceInfo(R.drawable.photo_rumah, "FNAF Pizzeria", "Backroom street number 420", 6.9),
+//        modifier = Modifier.padding(8.dp)
+//    )
+//}
+//
+//@Composable
+//@Preview(showBackground = true)
+//fun RecommendedItemPreview() {
+//    RecommendedItem(
+//        place = PlaceInfo(R.drawable.photo_rumah, "FNAF Pizzeria", "Backroom street number 420", 6.9),
+//        modifier = Modifier.padding(8.dp)
+//    )
+//}

@@ -99,7 +99,10 @@ fun AddMapScreen(prevAddress: String = "", prevLat: Double? = null, prevLong: Do
                         elevation = 10.dp,
                         shape = RoundedCornerShape(20.dp)
                     ),
-                navigateToAdd = {navigateToAdd()})
+                navigateToAdd = {navigateToAdd()},
+                lat = cameraPositionState.position.target.latitude,
+                long = cameraPositionState.position.target.longitude,
+                kecamatan = showLocationLocale(cameraPositionState.position.target.latitude, cameraPositionState.position.target.longitude, context))
         } else {
             FooterSetLocationLoading(
                 modifier = Modifier.align(Alignment.BottomCenter)
@@ -136,6 +139,9 @@ fun FooterSetLocation(
     modifier: Modifier = Modifier,
     place: String,
     navigateToAdd: () -> Unit,
+    lat: Double,
+    long: Double,
+    kecamatan: String,
 ) {
     val context = LocalContext.current
     // scope
@@ -152,6 +158,9 @@ fun FooterSetLocation(
                     onClick = {
                         scope.launch {
                             dataStore.saveAddress(place)
+                            dataStore.saveLat(lat.toString())
+                            dataStore.saveLong(long.toString())
+                            dataStore.saveKecamatan(trimKecamatan(kecamatan))
                         }
                         navigateToAdd()
                     },
@@ -190,14 +199,10 @@ fun showLocationLocale(lat: Double, long: Double, ctx: Context): String {
     return address?.get(0)?.locality!!
 }
 
-fun getLatFromLocationName(address: String, ctx: Context): Double {
-    var geocoder = Geocoder(ctx, Locale.getDefault())
-    val coord = geocoder.getFromLocationName(address, 1)
-    return coord?.get(0)?.getLatitude()!!
-}
-
-fun getLongFromLocationName(address: String, ctx: Context): Double {
-    var geocoder = Geocoder(ctx, Locale.getDefault())
-    val coord = geocoder.getFromLocationName(address, 1)
-    return coord?.get(0)?.getLongitude()!!
+fun trimKecamatan(kecamatan: String): String {
+    var kecamatanTrimmed = kecamatan
+    if(kecamatan.take(9) == "Kecamatan") {
+        kecamatanTrimmed = kecamatanTrimmed.drop(10)
+    }
+    return kecamatanTrimmed
 }

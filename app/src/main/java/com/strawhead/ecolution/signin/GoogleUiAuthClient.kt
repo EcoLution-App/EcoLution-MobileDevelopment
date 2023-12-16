@@ -43,7 +43,8 @@ class GoogleUiAuthClient (
                     UserData(
                         userId = uid,
                         username = displayName,
-                        profilePictureUrl = photoUrl?.toString()
+                        profilePictureUrl = photoUrl?.toString(),
+                        email = email
                     )
                 },
                 errorMessage = null
@@ -71,7 +72,8 @@ class GoogleUiAuthClient (
         UserData(
             userId = uid,
             username = displayName,
-            profilePictureUrl = photoUrl?.toString()
+            profilePictureUrl = photoUrl?.toString(),
+            email = email
         )
     }
     private fun buildSignInRequest(): BeginSignInRequest{

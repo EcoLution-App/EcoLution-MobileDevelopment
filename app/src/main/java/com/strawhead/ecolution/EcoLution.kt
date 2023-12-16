@@ -51,6 +51,7 @@ import com.strawhead.ecolution.ui.navigation.Screen
 import com.strawhead.ecolution.ui.screen.addhome.AddMapScreen
 import com.strawhead.ecolution.ui.screen.addhome.AddScreen
 import com.strawhead.ecolution.ui.screen.home.HomeScreen
+import com.strawhead.ecolution.ui.screen.homeinfo.HomeInfo
 import com.strawhead.ecolution.ui.screen.profile.ProfileScreen
 import com.strawhead.ecolution.ui.screen.profile.ProfileSignInScreen
 import com.strawhead.ecolution.ui.screen.profile.ProfileViewModel
@@ -89,8 +90,13 @@ fun EcoLutionApp(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                HomeScreen()
+                HomeScreen(navigateToPlace = { navController.navigate("infohome") })
             }
+
+            composable("infohome") {
+                HomeInfo()
+            }
+
             composable(Screen.Profile.route) {
 
                 val viewModel = viewModel<ProfileViewModel>()
@@ -164,14 +170,16 @@ fun EcoLutionApp(
             composable(route = Screen.Add.route) {
                 if(googleAuthUiClient.getSignedInUser() == null) {
                     navController.navigate(Screen.Profile.route)
+                } else {
+                    AddScreen(navigateToMap = {Latitude, Longitude ->
+                        if (Latitude == null && Longitude == null) {
+                            navController.navigate("add")
+                        } else {
+                            navController.navigate("add/" + Latitude.toString() + "/" + Longitude.toString())
+                        } },
+                        navigateBack = {navController.popBackStack()},
+                        userData = googleAuthUiClient.getSignedInUser())
                 }
-
-                AddScreen(navigateToMap = {Latitude, Longitude ->
-                    if (Latitude == null && Longitude == null) {
-                        navController.navigate("add")
-                    } else {
-                        navController.navigate("add/" + Latitude.toString() + "/" + Longitude.toString())
-                    } }, navigateBack = {navController.popBackStack()})
             }
 
             composable("add/{prevLat}/{prevLong}",
