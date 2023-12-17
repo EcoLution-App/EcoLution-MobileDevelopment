@@ -59,6 +59,8 @@ import com.strawhead.ecolution.ui.theme.EcoLutionTheme
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun EcoLutionApp(
@@ -79,7 +81,7 @@ fun EcoLutionApp(
     val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
         bottomBar = {
-            if (currentRoute?.take(3) != "add") {
+            if ((currentRoute?.take(3) != "add" && currentRoute?.take(8) != "infohome")) {
                 BottomBar(navController)
             } },
         modifier = modifier
@@ -90,11 +92,36 @@ fun EcoLutionApp(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                HomeScreen(navigateToPlace = { navController.navigate("infohome") })
+                HomeScreen(navigateToPlace = { image, title, price, address, description, sellerName, sellerEmail ->
+                    val encodedUrl = URLEncoder.encode(image, StandardCharsets.UTF_8.toString())
+                    navController.navigate("infohome/$encodedUrl/$title/$price/$address/$description/$sellerName/$sellerEmail")
+                })
             }
 
-            composable("infohome") {
-                HomeInfo()
+            composable("infohome/{image}/{title}/{price}/{address}/{description}/{sellerName}/{sellerEmail}",
+                arguments = listOf(navArgument("image") {
+                    type = NavType.StringType
+                }, navArgument("title") {
+                    type = NavType.StringType
+                }, navArgument("price") {
+                    type = NavType.StringType
+                }, navArgument("address") {
+                    type = NavType.StringType
+                }, navArgument("description") {
+                    type = NavType.StringType
+                }, navArgument("sellerName") {
+                    type = NavType.StringType
+                }, navArgument("sellerEmail") {
+                    type = NavType.StringType
+                },
+                    )) {
+                HomeInfo(image = it.arguments?.getString("image")!!,
+                    title = it.arguments?.getString("title")!!,
+                    price = it.arguments?.getString("price")!!,
+                    address = it.arguments?.getString("address")!!,
+                    description = it.arguments?.getString("description")!!,
+                    sellerName = it.arguments?.getString("sellerName")!!,
+                    sellerEmail = it.arguments?.getString("sellerEmail")!!)
             }
 
             composable(Screen.Profile.route) {
