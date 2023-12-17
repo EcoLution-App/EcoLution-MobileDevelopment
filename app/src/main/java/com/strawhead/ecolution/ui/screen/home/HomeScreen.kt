@@ -1,9 +1,6 @@
 package com.strawhead.ecolution.ui.screen.home
 
 import android.icu.text.NumberFormat
-import android.icu.util.Currency
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,30 +21,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.strawhead.ecolution.ui.components.Search
-import com.strawhead.ecolution.ui.screen.addhome.LocationDataStore
-import com.strawhead.ecolution.ui.screen.homeinfo.HomeInfoDataStore
 import com.strawhead.ecolution.ui.tempmodel.PlaceInfo
 import com.strawhead.ecolution.ui.tempmodel.dummyPlaceInfo
-import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
-fun HomeScreen(navigateToPlace: () -> Unit) {
+fun HomeScreen(navigateToPlace: (image: String,
+                                 title: String,
+                                 price: String,
+                                 address: String,
+                                 description: String,
+                                 sellerName: String,
+                                 sellerEmail: String) -> Unit) {
     Column() {
         Banner()
         Text(
@@ -55,13 +51,35 @@ fun HomeScreen(navigateToPlace: () -> Unit) {
             modifier = Modifier.padding(top = 20.dp, start = 20.dp, end = 20.dp),
             fontWeight = FontWeight.Bold,
         )
-        NearYouRow(dummyPlaceInfo, Modifier.padding(top = 20.dp, bottom = 20.dp), navigateToPlace = {navigateToPlace()})
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            modifier = Modifier.padding(top = 20.dp, bottom = 20.dp)
+        ) {
+            items(dummyPlaceInfo) { place ->
+                NearYouItem(place, Modifier.shadow(
+                    elevation = 10.dp,
+                    shape = RoundedCornerShape(8.dp))
+                    .clickable {
+                        navigateToPlace(place.image, place.title, place.price, place.address, place.description, place.sellerName, place.sellerEmail)
+                    }
+                )
+            }
+        }
         Text(
             text = "Based on your preference",
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
             fontWeight = FontWeight.Bold,
         )
-        RecommendedColumn(dummyPlaceInfo, Modifier.padding(start = 15.dp, end = 15.dp, bottom = 20.dp))
+//        RecommendedColumn(dummyPlaceInfo, Modifier.padding(start = 15.dp, end = 15.dp, bottom = 20.dp), navigateToPlace = {navigateToPlace()})
+        LazyColumn(modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 20.dp)) {
+            items(dummyPlaceInfo) { place ->
+                RecommendedItem(place, modifier = Modifier
+                    .clickable {
+                        navigateToPlace(place.image, place.title, place.price, place.address, place.description, place.sellerName, place.sellerEmail)
+                    })
+            }
+        }
     }
 }
 
@@ -96,8 +114,8 @@ fun RecommendedItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(
-                painter = painterResource(place.image),
+            AsyncImage(
+                model = place.image,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -128,53 +146,7 @@ fun RecommendedItem(
         }
     }
 }
-@Composable
-fun NearYouRow(
-    listPlace: List<PlaceInfo>,
-    modifier: Modifier = Modifier,
-    navigateToPlace: () -> Unit
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dataStore = HomeInfoDataStore(context)
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        modifier = modifier
-    ) {
-        items(listPlace) { place ->
-            NearYouItem(place, Modifier.shadow(
-                elevation = 10.dp,
-                shape = RoundedCornerShape(8.dp))
-                .clickable {
-                    scope.launch {
-                        dataStore.saveHomeInfo("title", place.title)
-                        dataStore.saveHomeInfo("price", place.price)
-                        dataStore.saveHomeInfo("address", place.address)
-                        dataStore.saveHomeInfo("kecamatan", place.kecamatan)
-                        dataStore.saveHomeInfo("description", place.description)
-                        dataStore.saveHomeInfo("sellerName", place.sellerName)
-                        dataStore.saveHomeInfo("sellerEmail", place.sellerEmail)
-                    }
-                    navigateToPlace()
-                    Log.d("hahha", "hahaha")
-                }
-            )
-        }
-    }
-}
 
-@Composable
-fun RecommendedColumn(
-    listPlace: List<PlaceInfo>,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(modifier = modifier) {
-        items(listPlace) { place ->
-            RecommendedItem(place)
-        }
-    }
-}
 @Composable
 fun NearYouItem(
     place: PlaceInfo,
@@ -190,8 +162,8 @@ fun NearYouItem(
         ),
     ){
         Column {
-            Image(
-                painter = painterResource(place.image),
+            AsyncImage(
+                model = place.image,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -223,11 +195,11 @@ fun NearYouItem(
     }
 }
 
-@Preview(showBackground = true, device = Devices.PIXEL_4)
-@Composable
-fun PreviewHome() {
-    HomeScreen({})
-}
+//@Preview(showBackground = true, device = Devices.PIXEL_4)
+//@Composable
+//fun PreviewHome() {
+//    HomeScreen({})
+//}
 
 //@Composable
 //@Preview(showBackground = true)

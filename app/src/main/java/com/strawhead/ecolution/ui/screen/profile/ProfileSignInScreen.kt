@@ -88,7 +88,6 @@ fun ProfileSignInScreen(
 @Composable
 fun ProfileSignInScreenPreview() {
     val defaultSignInState = SignInState()
-
     ProfileSignInScreen(
         state = defaultSignInState,
         onSignInClick = {}
