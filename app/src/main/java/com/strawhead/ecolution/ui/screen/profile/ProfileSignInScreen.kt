@@ -155,17 +155,6 @@ fun ProfileSignInScreen(
                     style = TextStyle(fontSize = 10.sp)
                 )
             }
-        }// Sign-in button
-        Button(
-            onClick = onSignInClick,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .clip(RoundedCornerShape(15.dp))
-                .height(60.dp)
-                .width(300.dp)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            Text(text = "Sign in")
         }
     }
 }
