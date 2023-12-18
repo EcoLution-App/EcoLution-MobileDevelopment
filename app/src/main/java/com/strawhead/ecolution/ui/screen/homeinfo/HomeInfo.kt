@@ -2,6 +2,7 @@ package com.strawhead.ecolution.ui.screen.homeinfo
 
 import android.icu.text.NumberFormat
 import android.location.Geocoder
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -12,12 +13,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -67,6 +71,7 @@ fun Banner(
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeInfo(image: String,
              title: String,
@@ -84,76 +89,93 @@ fun HomeInfo(image: String,
     val alamat = geocoder.getFromLocationName(address, 1)
     var latitude = alamat?.get(0)?.latitude
     var longitude = alamat?.get(0)?.longitude
-    Box {
-        val markerPosition = LatLng(latitude!!, longitude!!)
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(markerPosition, 18f)
-        }
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState,
-            uiSettings = MapUiSettings(zoomControlsEnabled = false)
-        ) {
-            val place = LatLng(latitude, longitude)
-            Marker(
-                position = place,
-                title = title,
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-            )
-        }
-        Banner()
-        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+    var CityName = alamat?.get(0)?.subAdminArea
+    Log.v("log_tag", "CityName " + CityName)
+
+    val scaffoldState = rememberBottomSheetScaffoldState()
+    BottomSheetScaffold(
+        sheetContainerColor = Color.White,
+        scaffoldState = scaffoldState,
+        sheetContent = {
+            Column () {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp, bottom = 10.dp, start = 16.dp)
+                )
+                Text(
+                    text = address,
+                    fontWeight = FontWeight.ExtraLight,
+                    modifier = Modifier
+                        .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
+                )
+                Text(
+                    text = description,
+                    fontWeight = FontWeight.Light,
+                    modifier = Modifier
+                        .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
+                )
+                Text(
+                    text = format.format(price.toInt()).dropLast(3),
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier
+                        .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
+                )
+                Divider(color = Color.Black, thickness = 1.dp)
+            }
+        },
+        sheetPeekHeight = 150.dp,
+        modifier = Modifier.advancedShadow(shadowBlurRadius = 5.dp)
+    ) {
+        Box {
+            val markerPosition = LatLng(latitude!!, longitude!!)
+            val cameraPositionState = rememberCameraPositionState {
+                position = CameraPosition.fromLatLngZoom(markerPosition, 18f)
+            }
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                uiSettings = MapUiSettings(zoomControlsEnabled = false)
+            ) {
+                val place = LatLng(latitude, longitude)
+                Marker(
+                    position = place,
+                    title = title,
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                )
+            }
             val imageDecode = URLDecoder.decode(image, StandardCharsets.UTF_8.toString())
             AsyncImage(
                 model = imageDecode,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .padding(start = 20.dp, bottom = 170.dp)
                     .width(150.dp)
                     .height(150.dp)
-                    .padding(start = 20.dp, bottom = 20.dp)
-                    .border(2.dp, Color.Black, RectangleShape)
+                    .border(2.dp, Color.White, RectangleShape)
+                    .shadow(2.dp)
+                    .align(Alignment.BottomStart)
             )
-            Card (
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White,
-                ),
-                modifier = Modifier
-                    .advancedShadow(shadowBlurRadius = 5.dp)
-                    .clip(RoundedCornerShape(12.dp))
-            ) {
-                Column () {
-                    Text(
-                        text = title,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp, bottom = 10.dp, start = 16.dp)
-                    )
-                    Text(
-                        text = address,
-                        fontWeight = FontWeight.ExtraLight,
-                        modifier = Modifier
-                            .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
-                    )
-                    Text(
-                        text = description,
-                        fontWeight = FontWeight.Light,
-                        modifier = Modifier
-                            .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
-                    )
-                    Text(
-                        text = format.format(price.toInt()).dropLast(3),
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier
-                            .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
-                    )
-                    Divider(color = Color.Black, thickness = 1.dp)
-                }
-            }
-
+            Banner()
+    //        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+    //            Card (
+    //                shape = MaterialTheme.shapes.medium,
+    //                colors = CardDefaults.cardColors(
+    //                    containerColor = Color.White,
+    //                ),
+    //                modifier = Modifier
+    //                    .advancedShadow(shadowBlurRadius = 5.dp)
+    //                    .clip(RoundedCornerShape(12.dp))
+    //            ) {
+    //
+    //            }
+    //
+    //        }
         }
+
     }
 }
 
