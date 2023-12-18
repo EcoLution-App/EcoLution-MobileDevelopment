@@ -3,6 +3,7 @@ package com.strawhead.ecolution.ui.screen.profile
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,7 +72,7 @@ fun ProfileSignInScreen(
                 .fillMaxWidth()
                 .background(
                     color = colorResource(id = R.color.bluesky),
-                    shape = RoundedCornerShape(bottomStart = 150.dp, bottomEnd = 150.dp)
+                    shape = RoundedCornerShape(bottomStart = 170.dp, bottomEnd = 170.dp)
                 )
                 .padding(20.dp)
         ) {
@@ -89,7 +90,7 @@ fun ProfileSignInScreen(
         // White Box
         Box(
             modifier = Modifier
-                .padding(top = 50.dp)
+                .padding(top = 100.dp)
                 .height(250.dp)
                 .width(225.dp)
                 .offset(y = -0.3f.dp)
@@ -115,6 +116,7 @@ fun ProfileSignInScreen(
                 // Google Sign-in Box
                 Box(
                     modifier = Modifier
+                        .clickable { onSignInClick() }
                         .height(50.dp)
                         .width(130.dp)
                         .shadow(2.dp, shape = RectangleShape)
