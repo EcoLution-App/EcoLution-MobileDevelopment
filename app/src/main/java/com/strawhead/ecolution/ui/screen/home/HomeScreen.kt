@@ -230,14 +230,25 @@ fun NearYouItem(
                     .clip(RoundedCornerShape(8.dp))
             )
             Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = place!!.title!!,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.ExtraBold
-                    ),
-                )
+                if (place!!.title!!.length > 15) {
+                    Text(
+                        text = place!!.title!!.take(13)+"..",
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold
+                        ),
+                    )
+                } else {
+                    Text(
+                        text = place!!.title!!,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold
+                        ),
+                    )
+                }
                 Text(
                     text = place!!.address!!.substring(0, 13) + "...",
                     maxLines = 1,
