@@ -51,4 +51,11 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
     <string name="title_activity_location_set">LocationSetActivity</string>
+    <string name="or_continue_as_a_guest">Or Continue as a guest</string>
+    <string name="to_access_the_full_feature">To access the full feature</string>
+    <string name="login_with">Login with</string>
+    <string name="add_place">Add place</string>
+    <string name="edit_place">Edit place</string>
+    <string name="google">Google</string>
+
 </resources>

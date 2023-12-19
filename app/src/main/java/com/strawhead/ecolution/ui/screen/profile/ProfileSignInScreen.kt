@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,7 +42,6 @@ import androidx.compose.ui.unit.sp
 import com.strawhead.ecolution.R
 import com.strawhead.ecolution.signin.SignInState
 import com.strawhead.ecolution.ui.theme.gray
-
 
 @Composable
 fun ProfileSignInScreen(
@@ -107,7 +108,7 @@ fun ProfileSignInScreen(
                 Text(
                     modifier = Modifier
                         .padding(20.dp),
-                    text = "Login with",
+                    text = stringResource(R.string.login_with),
                     fontWeight = FontWeight.Bold,
                     style = TextStyle(fontSize = 30.sp)
                 )
@@ -134,11 +135,11 @@ fun ProfileSignInScreen(
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Google")
+                        Text(text = stringResource(R.string.google))
                     }
                 }
                 Text(
-                    text = "To access the full feature",
+                    text = stringResource(R.string.to_access_the_full_feature),
                     style = TextStyle(fontSize = 15.sp),
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -151,7 +152,7 @@ fun ProfileSignInScreen(
                         .padding(top = 15.dp, bottom = 15.dp)
                 )
                 Text(
-                    text = "Or Continue as a guest",
+                    text = stringResource(R.string.or_continue_as_a_guest),
                     style = TextStyle(fontSize = 10.sp)
                 )
             }
