@@ -4,6 +4,8 @@ plugins {
 
     id("com.google.gms.google-services")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -44,7 +46,7 @@ android {
         viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
     packaging {
         resources {
@@ -87,6 +89,14 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.0")
     implementation("androidx.navigation:navigation-compose:2.5.3")
     implementation("io.coil-kt:coil-compose:2.2.2")
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:adapter-rxjava:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+
+    implementation("androidx.room:room-runtime:2.5.2")
+    ksp("androidx.room:room-compiler:2.5.2")
 
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:18.0.0")

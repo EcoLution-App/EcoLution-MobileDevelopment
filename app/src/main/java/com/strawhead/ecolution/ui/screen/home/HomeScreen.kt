@@ -47,7 +47,7 @@ fun HomeScreen(navigateToPlace: (image: String,
     Column() {
         Banner()
         Text(
-            text = "Recommended near you",
+            text = "Latest sales",
             modifier = Modifier.padding(top = 20.dp, start = 20.dp, end = 20.dp),
             fontWeight = FontWeight.Bold,
         )
@@ -66,12 +66,13 @@ fun HomeScreen(navigateToPlace: (image: String,
                 )
             }
         }
+
         Text(
             text = "Based on your preference",
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
             fontWeight = FontWeight.Bold,
         )
-//        RecommendedColumn(dummyPlaceInfo, Modifier.padding(start = 15.dp, end = 15.dp, bottom = 20.dp), navigateToPlace = {navigateToPlace()})
+
         LazyColumn(modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 20.dp)) {
             items(dummyPlaceInfo) { place ->
                 RecommendedItem(place, modifier = Modifier

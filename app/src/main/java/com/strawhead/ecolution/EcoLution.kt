@@ -1,5 +1,6 @@
 package com.strawhead.ecolution
 
+import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +52,7 @@ import com.strawhead.ecolution.signin.GoogleUiAuthClient
 import com.strawhead.ecolution.ui.navigation.Screen
 import com.strawhead.ecolution.ui.screen.addhome.AddMapScreen
 import com.strawhead.ecolution.ui.screen.addhome.AddScreen
+import com.strawhead.ecolution.ui.screen.bookmark.Bookmark
 import com.strawhead.ecolution.ui.screen.home.HomeScreen
 import com.strawhead.ecolution.ui.screen.homeinfo.HomeInfo
 import com.strawhead.ecolution.ui.screen.profile.ProfileScreen
@@ -122,6 +125,10 @@ fun EcoLutionApp(
                     description = it.arguments?.getString("description")!!,
                     sellerName = it.arguments?.getString("sellerName")!!,
                     sellerEmail = it.arguments?.getString("sellerEmail")!!)
+            }
+
+            composable(Screen.Bookmark.route) {
+                Bookmark()
             }
 
             composable(Screen.Profile.route) {
@@ -205,7 +212,8 @@ fun EcoLutionApp(
                             navController.navigate("add/" + Latitude.toString() + "/" + Longitude.toString())
                         } },
                         navigateBack = {navController.popBackStack()},
-                        userData = googleAuthUiClient.getSignedInUser())
+                        userData = googleAuthUiClient.getSignedInUser(),
+                        showToast = {msg -> showToast(context, msg)})
                 }
             }
 
@@ -253,8 +261,8 @@ fun BottomBar(
                 icon = Icons.Default.Home
             ),
             BottomBarItem(
-                title = stringResource(R.string.menu_favorite),
-                icon = Icons.Default.Favorite
+                title = "Bookmark",
+                icon = Icons.Default.Star
             ),
             BottomBarItem(
                 title = "Add",
@@ -323,4 +331,8 @@ fun EcoLutionAppPreview() {
     EcoLutionTheme {
         EcoLutionApp()
     }
+}
+
+private fun showToast(ctx: Context, message: String) {
+    Toast.makeText(ctx, message, Toast.LENGTH_SHORT).show()
 }

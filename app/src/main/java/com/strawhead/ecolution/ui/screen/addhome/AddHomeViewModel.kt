@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.asLiveData
 import kotlinx.coroutines.flow.Flow
+import java.io.File
 
 class AddHomeViewModel() : ViewModel() {
     private val _nama = MutableStateFlow("")
@@ -24,6 +25,9 @@ class AddHomeViewModel() : ViewModel() {
 
     private val _image = MutableStateFlow<Uri?>(null)
     val image = _image.asStateFlow()
+
+    private val _imageFile = MutableStateFlow<File?>(null)
+    val imageFile = _imageFile.asStateFlow()
 
     private val _deskripsi = MutableStateFlow("")
     val deskripsi = _deskripsi.asStateFlow()
@@ -41,6 +45,10 @@ class AddHomeViewModel() : ViewModel() {
 
     fun changeImageValue(cnt: Uri?){
         _image.value = cnt
+    }
+
+    fun changeImageFileValue(cnt: File?){
+        _imageFile.value = cnt
     }
 
     fun changeDeskripsiValue(cnt: String){

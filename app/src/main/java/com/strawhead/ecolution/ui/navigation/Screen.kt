@@ -2,7 +2,7 @@ package com.strawhead.ecolution.ui.navigation
 
 sealed class Screen(val route: String) {
     object Home : Screen("Home")
-    object Favorite : Screen("Favorite")
+    object Bookmark : Screen("Bookmark")
     object Add : Screen("Add")
     object Profile : Screen("Profile")
 

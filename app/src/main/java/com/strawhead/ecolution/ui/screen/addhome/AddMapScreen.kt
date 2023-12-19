@@ -70,7 +70,6 @@ fun AddMapScreen(prevAddress: String = "", prevLat: Double? = null, prevLong: Do
         uiSettings = MapUiSettings(zoomControlsEnabled = false)
     )
     Box {
-
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,

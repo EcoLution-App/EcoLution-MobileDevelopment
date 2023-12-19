@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -98,6 +100,7 @@ fun HomeInfo(image: String,
         scaffoldState = scaffoldState,
         sheetContent = {
             Column () {
+                Divider(color = Color(0xffeae5e7), thickness = 1.dp)
                 Text(
                     text = title,
                     fontWeight = FontWeight.Medium,
@@ -105,15 +108,16 @@ fun HomeInfo(image: String,
                         .fillMaxWidth()
                         .padding(top = 10.dp, bottom = 10.dp, start = 16.dp)
                 )
-                Text(
-                    text = address,
-                    fontWeight = FontWeight.ExtraLight,
-                    modifier = Modifier
-                        .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
-                )
+                Row(modifier = Modifier.padding(start = 16.dp, bottom = 10.dp, end = 10.dp)) {
+                    Image(painter = painterResource(R.drawable.ic_map_marker), contentDescription = null,)
+                    Text(
+                        text = address,
+                        fontWeight = FontWeight.ExtraLight,
+                    )
+                }
                 Text(
                     text = description,
-                    fontWeight = FontWeight.Light,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
                 )
