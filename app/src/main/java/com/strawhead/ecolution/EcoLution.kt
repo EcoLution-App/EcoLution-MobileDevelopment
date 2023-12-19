@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +47,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.room.Delete
 import com.google.android.gms.auth.api.identity.Identity
 import com.strawhead.ecolution.model.BottomBarItem
 import com.strawhead.ecolution.signin.GoogleUiAuthClient
@@ -53,6 +55,7 @@ import com.strawhead.ecolution.ui.navigation.Screen
 import com.strawhead.ecolution.ui.screen.addhome.AddMapScreen
 import com.strawhead.ecolution.ui.screen.addhome.AddScreen
 import com.strawhead.ecolution.ui.screen.bookmark.Bookmark
+import com.strawhead.ecolution.ui.screen.delete.DeleteScreen
 import com.strawhead.ecolution.ui.screen.home.HomeScreen
 import com.strawhead.ecolution.ui.screen.homeinfo.HomeInfo
 import com.strawhead.ecolution.ui.screen.profile.ProfileScreen
@@ -201,6 +204,10 @@ fun EcoLutionApp(
                 )
             }
 
+            composable("My Sales") {
+                DeleteScreen(userData = googleAuthUiClient.getSignedInUser(), showToast = { showToast(context, it) })
+            }
+
             composable(route = Screen.Add.route) {
                 if(googleAuthUiClient.getSignedInUser() == null) {
                     navController.navigate(Screen.Profile.route)
@@ -269,6 +276,10 @@ fun BottomBar(
                 icon = Icons.Default.AddCircle
             ),
             BottomBarItem(
+                title = "My Sales",
+                icon = Icons.Default.List
+            ),
+            BottomBarItem(
                 title = stringResource(R.string.menu_profile),
                 icon = Icons.Default.AccountCircle
             ),
@@ -293,7 +304,7 @@ fun BottomBar(
                             it.title.take(3) == currentRoute.toString().take(3)
                                },
                 onClick = {
-                    if (it.title == "Add") {
+                    if (it.title == "Add" || it.title == "My Sales") {
                         if(googleAuthUiClient.getSignedInUser() == null) {
                             navController.navigate(Screen.Profile.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {

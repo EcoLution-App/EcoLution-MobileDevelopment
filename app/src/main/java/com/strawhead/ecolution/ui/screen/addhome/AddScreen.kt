@@ -63,6 +63,8 @@ import com.strawhead.ecolution.data.remote.response.PostHomeResponse
 import com.strawhead.ecolution.data.remote.retrofit.ApiConfig
 import com.strawhead.ecolution.signin.UserData
 import com.strawhead.ecolution.ui.ViewModelFactory
+import com.strawhead.ecolution.ui.screen.home.ReloadDataStore
+import com.strawhead.ecolution.ui.screen.profile.ReloadDataStoreForAcc
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
@@ -117,6 +119,8 @@ fun AddScreen(userData: UserData?,
     // scope
     val scope = rememberCoroutineScope()
     val dataStore = LocationDataStore(context)
+    val reloadDataStore = ReloadDataStore(context)
+    val reloadDataStoreAcc = ReloadDataStoreForAcc(context)
 
     // get saved email
     val savedAddress = dataStore.getAddress.collectAsState(initial = "")
@@ -265,75 +269,88 @@ fun AddScreen(userData: UserData?,
                 deskripsi = newInput
                 viewModel.changeDeskripsiValue(newInput)
             },
-            maxLines = 4,
+            maxLines = 2,
             modifier = Modifier
-                .defaultMinSize(minHeight = 130.dp)
+                .defaultMinSize(minHeight = 65.dp)
                 .padding(start = 20.dp, top = 5.dp, bottom = 10.dp, end = 20.dp)
                 .fillMaxWidth()
         )
-        Button(colors = ButtonDefaults.buttonColors(Color(0xFF425A75)),
-            enabled = submitButtonEnable,
-            onClick = {
-                if(savedAddress.value!! != "") {
-                    Log.d("Data rumah -> Nama tempat : ", nama)
-                    Log.d("Data rumah -> Harga : ", harga)
-                    Log.d("Data rumah -> Alamat panjang : ", savedAddress.value!!)
-                    Log.d("Data rumah -> Kecamatan : ", kecamatan.value!!)
-                    Log.d("Data rumah -> Deskripsi : ", deskripsi)
-                    Log.d("Data rumah -> Nama penjual : ", sellerName!!)
-                    Log.d("Data rumah -> Email penjual : ", sellerEmail!!)
-                    submitButtonEnable = false
-                    buttonTitle = "Uploading"
-                    imageUri?.let { uri ->
-                        val imageFile = uriToFile(uri, context)
-                        val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
-                        val titleReq = nama.toRequestBody("text/plain".toMediaType())
-                        val priceReq = harga.toRequestBody("text/plain".toMediaType())
-                        val descriptionReq = deskripsi.toRequestBody("text/plain".toMediaType())
-                        val sellerReq = sellerName!!.toRequestBody("text/plain".toMediaType())
-                        val emailReq = sellerEmail!!.toRequestBody("text/plain".toMediaType())
-                        val addressReq = savedAddress.value!!.toRequestBody("text/plain".toMediaType())
-                        val subdistrictReq = kecamatan.value!!.toRequestBody("text/plain".toMediaType())
-                        val multipartBody = MultipartBody.Part.createFormData(
-                            "image",
-                            imageFile!!.name,
-                            requestImageFile
-                        )
-                        scope.launch {
-                            try {
-                                val apiService = ApiConfig.getApiService()
-                                val successResponse = apiService.uploadHouseData(titleReq, priceReq, descriptionReq, sellerReq, emailReq, addressReq, subdistrictReq, multipartBody)
-                                Log.d("status upload data", successResponse.message!!)
-                                if(successResponse.message!! == "House added successfully") {
-                                    scope.launch {
-                                        dataStore.saveAddress("")
-                                        dataStore.saveLat("")
-                                        dataStore.saveKecamatan("")
-                                        dataStore.saveLong("")
+        if ((nama != "" && harga != "" && savedAddress.value!! != "" && kecamatan.value!! != "" && deskripsi != "" && imageUri != null)) {
+            Button(colors = ButtonDefaults.buttonColors(Color(0xFF425A75)),
+                enabled = submitButtonEnable,
+                onClick = {
+                    if(savedAddress.value!! != "") {
+                        Log.d("Data rumah -> Nama tempat : ", nama)
+                        Log.d("Data rumah -> Harga : ", harga)
+                        Log.d("Data rumah -> Alamat panjang : ", savedAddress.value!!)
+                        Log.d("Data rumah -> Kecamatan : ", kecamatan.value!!)
+                        Log.d("Data rumah -> Deskripsi : ", deskripsi)
+                        Log.d("Data rumah -> Nama penjual : ", sellerName!!)
+                        Log.d("Data rumah -> Email penjual : ", sellerEmail!!)
+                        submitButtonEnable = false
+                        buttonTitle = "Uploading"
+                        imageUri?.let { uri ->
+                            val imageFile = uriToFile(uri, context)
+                            val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
+                            val titleReq = nama.toRequestBody("text/plain".toMediaType())
+                            val priceReq = harga.toRequestBody("text/plain".toMediaType())
+                            val descriptionReq = deskripsi.toRequestBody("text/plain".toMediaType())
+                            val sellerReq = sellerName!!.toRequestBody("text/plain".toMediaType())
+                            val emailReq = sellerEmail!!.toRequestBody("text/plain".toMediaType())
+                            val addressReq = savedAddress.value!!.toRequestBody("text/plain".toMediaType())
+                            val subdistrictReq = kecamatan.value!!.toRequestBody("text/plain".toMediaType())
+                            val multipartBody = MultipartBody.Part.createFormData(
+                                "image",
+                                imageFile!!.name,
+                                requestImageFile
+                            )
+                            scope.launch {
+                                try {
+                                    val apiService = ApiConfig.getApiService()
+                                    val successResponse = apiService.uploadHouseData(titleReq, priceReq, descriptionReq, sellerReq, emailReq, addressReq, subdistrictReq, multipartBody)
+                                    Log.d("status upload data", successResponse.message!!)
+                                    if(successResponse.message!! == "House added successfully") {
+                                        scope.launch {
+                                            dataStore.saveAddress("")
+                                            dataStore.saveLat("")
+                                            dataStore.saveKecamatan("")
+                                            dataStore.saveLong("")
+                                        }
+                                        reloadDataStoreAcc.saveReload("true")
+                                        reloadDataStore.saveReload("true")
+                                        navigateBack()
+                                        showToast(successResponse.message!!)
                                     }
-                                    navigateBack()
-                                    showToast(successResponse.message!!)
+                                    submitButtonEnable = true
+                                    buttonTitle = "Submit"
+                                } catch (e: HttpException) {
+                                    val errorBody = e.response()?.errorBody()?.string()
+                                    val errorResponse = Gson().fromJson(errorBody, PostHomeResponse::class.java)
+                                    Log.d("status upload data", errorResponse.message!!)
+                                    showToast(errorResponse.message!!)
+                                    submitButtonEnable = true
+                                    buttonTitle = "Submit"
                                 }
-                                submitButtonEnable = true
-                                buttonTitle = "Submit"
-                            } catch (e: HttpException) {
-                                val errorBody = e.response()?.errorBody()?.string()
-                                val errorResponse = Gson().fromJson(errorBody, PostHomeResponse::class.java)
-                                Log.d("status upload data", errorResponse.message!!)
-                                showToast(errorResponse.message!!)
-                                submitButtonEnable = true
-                                buttonTitle = "Submit"
                             }
                         }
                     }
-                }
-            },
-            shape = RoundedCornerShape(20),
-            modifier = Modifier
-                .padding(start = 20.dp, end = 20.dp)
-                .fillMaxWidth()
-        ) {
-            Text(buttonTitle)
+                },
+                shape = RoundedCornerShape(20),
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(buttonTitle)
+            }
+        } else {
+            Button(colors = ButtonDefaults.buttonColors(Color(0xFF425A75)),
+                enabled = false, onClick = {},
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(20)) {
+                Text("All form data need to be completed before submitting")
+            }
         }
     }
 }

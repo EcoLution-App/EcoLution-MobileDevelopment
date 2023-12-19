@@ -5,35 +5,35 @@ import com.google.gson.annotations.SerializedName
 data class GetAllHouseResponse(
 
 	@field:SerializedName("GetAllHouseResponse")
-	val getAllHouseResponse: List<GetAllHouseResponseItem?>? = null
+	val getAllHouseResponse: List<GetAllHouseResponseItem>
 )
 
 data class GetAllHouseResponseItem(
 
 	@field:SerializedName("seller")
-	val seller: String? = null,
+	val seller: String,
 
 	@field:SerializedName("address")
-	val address: String? = null,
+	val address: String,
 
 	@field:SerializedName("price")
-	val price: String? = null,
+	val price: String,
 
 	@field:SerializedName("subdistrict")
-	val subdistrict: String? = null,
+	val subdistrict: String,
 
 	@field:SerializedName("imageUrl")
-	val imageUrl: String? = null,
+	val imageUrl: String,
 
 	@field:SerializedName("description")
-	val description: String? = null,
+	val description: String,
 
 	@field:SerializedName("id")
-	val id: String? = null,
+	val id: String,
 
 	@field:SerializedName("title")
-	val title: String? = null,
+	val title: String,
 
 	@field:SerializedName("email")
-	val email: String? = null
+	val email: String
 )

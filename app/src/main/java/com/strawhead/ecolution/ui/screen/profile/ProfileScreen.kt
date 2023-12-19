@@ -1,5 +1,6 @@
 package com.strawhead.ecolution.ui.screen.profile
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,17 +16,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,14 +44,34 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.strawhead.ecolution.R
 import com.strawhead.ecolution.signin.UserData
+import com.strawhead.ecolution.ui.screen.home.HomeScreenViewModel
+import com.strawhead.ecolution.ui.screen.home.ReloadDataStore
 import com.strawhead.ecolution.ui.theme.gray
+import kotlinx.coroutines.launch
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ProfileScreen(userData: UserData?, onSignOut: () -> Unit) {
+    val placeOwnedViewModel = viewModel(modelClass = PlaceOwnedViewModel::class.java)
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val dataStore = ReloadDataStoreForAcc(context)
+    val reload = dataStore.getReload.collectAsState(initial = "true")
+    if (reload.value == "true") {
+        placeOwnedViewModel.reload()
+        scope.launch {
+            dataStore.saveReload("false")
+        }
+    }
+    val stateData by placeOwnedViewModel.stateData.collectAsState()
+    var jumlah by remember { mutableStateOf(0) }
+    jumlah = stateData.count{it.email == userData?.email}
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -128,7 +157,7 @@ fun ProfileScreen(userData: UserData?, onSignOut: () -> Unit) {
                     contentDescription = null
                 )
                 Text(
-                    text = "3 Place Posted",
+                    text = jumlah.toString() + " Place Posted",
                     fontWeight = FontWeight.Bold,
                 )
             }

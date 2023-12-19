@@ -64,6 +64,7 @@ fun AddMapScreen(prevAddress: String = "", prevLat: Double? = null, prevLong: Do
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(markerPosition, 18f)
     }
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
