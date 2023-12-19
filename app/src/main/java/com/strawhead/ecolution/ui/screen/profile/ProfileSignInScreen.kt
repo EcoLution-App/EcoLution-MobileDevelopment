@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -91,9 +92,8 @@ fun ProfileSignInScreen(
         // White Box
         Box(
             modifier = Modifier
-                .padding(top = 100.dp)
-                .height(250.dp)
-                .width(225.dp)
+                .fillMaxWidth()
+                .padding(top = 100.dp, start = 50.dp, end = 50.dp)
                 .offset(y = -0.3f.dp)
                 .clip(RoundedCornerShape(15.dp))
                 .background(color = colorResource(id = R.color.white))
@@ -107,7 +107,7 @@ fun ProfileSignInScreen(
             ) {
                 Text(
                     modifier = Modifier
-                        .padding(20.dp),
+                        .padding(30.dp),
                     text = stringResource(R.string.login_with),
                     fontWeight = FontWeight.Bold,
                     style = TextStyle(fontSize = 30.sp)
@@ -153,7 +153,8 @@ fun ProfileSignInScreen(
                 )
                 Text(
                     text = stringResource(R.string.or_continue_as_a_guest),
-                    style = TextStyle(fontSize = 10.sp)
+                    style = TextStyle(fontSize = 10.sp),
+                    modifier = Modifier.padding(bottom = 50.dp)
                 )
             }
         }

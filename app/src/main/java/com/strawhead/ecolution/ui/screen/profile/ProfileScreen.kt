@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -190,6 +191,7 @@ fun ProfileScreen(userData: UserData?, onSignOut: () -> Unit) {
         }
         Button(
             onClick = onSignOut,
+            colors = ButtonDefaults.buttonColors(Color(0xFF425A75)),
             modifier = Modifier
                 .height(50.dp)
                 .width(225.dp)
