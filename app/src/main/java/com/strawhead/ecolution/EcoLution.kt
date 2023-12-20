@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -75,7 +76,7 @@ fun EcoLutionApp(
 ) {
 
     val context = LocalContext.current
-
+    val scope = rememberCoroutineScope()
     val googleAuthUiClient by lazy {
         GoogleUiAuthClient(
             context = context,
@@ -131,7 +132,10 @@ fun EcoLutionApp(
             }
 
             composable(Screen.Bookmark.route) {
-                Bookmark()
+                Bookmark(navigateToPlace = { image, title, price, address, description, sellerName, sellerEmail ->
+                    val encodedUrl = URLEncoder.encode(image, StandardCharsets.UTF_8.toString())
+                    navController.navigate("infohome/$encodedUrl/$title/$price/$address/$description/$sellerName/$sellerEmail") },
+                    )
             }
 
             composable(Screen.Profile.route) {
@@ -293,7 +297,7 @@ fun BottomBar(
             ),
             BottomBarItem(
                 title = "Bookmark",
-                icon = Icons.Default.Star
+                icon = Icons.Default.Favorite
             ),
             BottomBarItem(
                 title = "Add",

@@ -136,10 +136,6 @@ fun AddScreen(userData: UserData?,
         mutableStateOf<Uri?>(gambar)
     }
 
-    var imageFile by remember {
-        mutableStateOf<File?>(gambarFile)
-    }
-
     val launcher = rememberLauncherForActivityResult(
         contract =
         ActivityResultContracts.GetContent()

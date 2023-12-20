@@ -1,10 +1,15 @@
 package com.strawhead.ecolution.ui.screen.homeinfo
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.icu.text.NumberFormat
 import android.location.Geocoder
 import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,11 +22,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +39,10 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,27 +85,28 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.strawhead.ecolution.R
+import com.strawhead.ecolution.data.local.database.Bookmark
 import com.strawhead.ecolution.ui.screen.addhome.LocationDataStore
+import com.strawhead.ecolution.ui.screen.bookmark.BookMarkViewModelFactory
+import com.strawhead.ecolution.ui.screen.bookmark.BookmarkViewModel
 import com.strawhead.ecolution.ui.screen.home.HomeScreenViewModel
 import com.strawhead.ecolution.ui.tempmodel.PlaceInfo
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-@Composable
-fun Banner(
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier) {
-        Surface(
-            color = Color(0xFF425A75), modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Text("Home information", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.White, modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 20.dp))
-        }
-    }
-}
+//@Composable
+//fun Banner(
+//    modifier: Modifier = Modifier,
+//) {
+//    val bookmarkViewModel = viewModel(modelClass = BookmarkViewModel::class.java)
+//
+//}
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeInfo(image: String,
@@ -107,7 +122,9 @@ fun HomeInfo(image: String,
     val state by homeInfoViewModel.state.collectAsState()
     val loading by homeInfoViewModel.loading.collectAsState()
     val context = LocalContext.current
-
+    val bookmarkViewModel: BookmarkViewModel = viewModel(factory = BookMarkViewModelFactory(context))
+    var isFavorite by remember { mutableStateOf(false) }
+    var isFinishedLookingDatabase by remember { mutableStateOf(false) }
     var geocoder = Geocoder(context, Locale.getDefault())
     val alamat = geocoder.getFromLocationName(address, 1)
     var latitude = alamat?.get(0)?.latitude
@@ -171,6 +188,7 @@ fun HomeInfo(image: String,
                         modifier = Modifier
                             .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
                     )
+
                 }
                 Divider(color = Color(0xffeae5e7), thickness = 1.dp)
                 if(!loading) {
@@ -286,7 +304,74 @@ fun HomeInfo(image: String,
                     .shadow(2.dp)
                     .align(Alignment.BottomStart)
             )
-            Banner()
+            Box() {
+                Surface(
+                    color = Color(0xFF425A75), modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Row {
+                        Text("Home information", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.White, modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 20.dp))
+                        Spacer(Modifier.weight(1f))
+
+                        GlobalScope.launch {
+                            var bookmarkList = bookmarkViewModel.getAllBookmarks()
+                            Log.d("bookmarkaa", bookmarkList.toString())
+                            if (bookmarkList.isNotNull()) {
+                                for (prop in bookmarkList) {
+                                    if (prop.image == image) {
+                                        isFavorite = true
+                                    }
+                                }
+                            }
+                            isFinishedLookingDatabase = true
+                        }
+                        if (isFinishedLookingDatabase) {
+                            if (isFavorite) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_heart_full),
+                                    contentDescription = "marker",
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                                        .width(35.dp)
+                                        .height(35.dp)
+                                        .clickable {
+                                            GlobalScope.launch {
+                                                bookmarkViewModel.delete(bookmarkViewModel.getBookmarkImageUrl(image))
+                                            }
+                                            showToast(context, "Removed from bookmark")
+                                            isFavorite = false
+                                        }
+                                )
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_heart_outline),
+                                    contentDescription = "marker",
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                                        .width(35.dp)
+                                        .height(35.dp)
+                                        .clickable {
+                                            var bookmark = Bookmark()
+                                            bookmark.let {
+                                                it.sellerName = sellerName
+                                                it.title = title
+                                                it.sellerEmail = sellerEmail
+                                                it.price = price
+                                                it.image = image
+                                                it.description = description
+                                                it.address= address
+                                            }
+                                            bookmarkViewModel.insert(bookmark)
+                                            showToast(context, "Added to bookmark")
+                                            isFavorite = true
+                                        }
+                                )
+                            }
+
+                        }
+                    }
+                }
+            }
 
         }
 
@@ -331,4 +416,8 @@ fun Modifier.advancedShadow(
             paint
         )
     }
+}
+
+private fun showToast(ctx: Context, message: String) {
+    Toast.makeText(ctx, message, Toast.LENGTH_SHORT).show()
 }

@@ -17,16 +17,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,12 +80,14 @@ fun DeleteScreen(userData: UserData?, showToast: (String) -> Unit,
                                    sellerEmail: String) -> Unit) {
     val homeViewModel = viewModel(modelClass = HomeScreenViewModel::class.java)
     val scope = rememberCoroutineScope()
+    val openDialog = remember { mutableStateOf(false) }
     val context = LocalContext.current
     val reloadDataStoreAcc = ReloadDataStoreForAcc(context)
     val dataStore = ReloadDataStore(context)
     val reload = dataStore.getReload.collectAsState(initial = "true")
     val state by homeViewModel.state.collectAsState()
     val loading by homeViewModel.loading.collectAsState()
+    var idOfHouse by remember { mutableStateOf("") }
     if (reload.value == "true") {
         homeViewModel.reload()
         scope.launch {
@@ -102,29 +109,48 @@ fun DeleteScreen(userData: UserData?, showToast: (String) -> Unit,
                                     navigateToPlace(place!!.imageUrl!!, place!!.title!!, place!!.price!!, place!!.address!!, place!!.description!!, place!!.seller!!, place!!.email!!)
                                 }
                             , delete = {id ->
-                                    scope.launch {
-                                        try {
-                                            val apiService = ApiConfig.getApiService()
-                                            val successResponse = apiService.deleteHouse(id)
-                                            Log.d("status delete data", successResponse.message!!)
-                                            if(successResponse.message!! == "House deleted successfully") {
-                                                showToast(successResponse.message!!)
-                                                homeViewModel.reload()
-                                                reloadDataStoreAcc.saveReload("true")
-                                            }
-                                        } catch (e: HttpException) {
-                                            val errorBody = e.response()?.errorBody()?.string()
-                                            val errorResponse = Gson().fromJson(errorBody, PostHomeResponse::class.java)
-                                            Log.d("status delete data", errorResponse.message!!)
-                                            showToast(errorResponse.message!!)
-                                        }
-                                    }
+                                    idOfHouse = id
+                                    openDialog.value = true
                                 })
                         }
                     }
                 }
             }
         }
+    }
+    if(openDialog.value) {
+        AlertDialog(
+            onDismissRequest = {openDialog.value = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch {
+                        try {
+                            val apiService = ApiConfig.getApiService()
+                            val successResponse = apiService.deleteHouse(idOfHouse)
+                            Log.d("status delete data", successResponse.message!!)
+                            if(successResponse.message!! == "House deleted successfully") {
+                                showToast(successResponse.message!!)
+                                homeViewModel.reload()
+                                reloadDataStoreAcc.saveReload("true")
+                            }
+                        } catch (e: HttpException) {
+                            val errorBody = e.response()?.errorBody()?.string()
+                            val errorResponse = Gson().fromJson(errorBody, PostHomeResponse::class.java)
+                            Log.d("status delete data", errorResponse.message!!)
+                            showToast(errorResponse.message!!)
+                        }
+                    }
+                    openDialog.value = false
+                })
+                { Text(text = "Yes") }
+            },
+            dismissButton = {
+                TextButton(onClick = {openDialog.value = false})
+                { Text(text = "Cancel") }
+            },
+            title = { Text(text = "Delete house sale") },
+            text = { Text(text = "Are you sure you want to delete this house sale?") }
+        )
     }
 }
 
