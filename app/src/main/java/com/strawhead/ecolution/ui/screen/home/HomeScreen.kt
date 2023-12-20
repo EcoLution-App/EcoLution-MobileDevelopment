@@ -12,17 +12,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +64,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun HomeScreen(navigateToPlace: (image: String,
@@ -79,11 +87,46 @@ fun HomeScreen(navigateToPlace: (image: String,
             dataStore.saveReload("false")
         }
     }
-
+    var filter by remember { mutableStateOf("") }
     Column() {
-        Banner()
+        Box() {
+            Surface(
+                color = Color(0xFF425A75), modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                SearchBar(
+                    query = filter,
+                    onQueryChange = {
+                                    filter = it
+                    },
+                    onSearch = {},
+                    active = false,
+                    onActiveChange = {},
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    placeholder = {
+                        Text("Search")
+                    },
+                    shape = MaterialTheme.shapes.large,
+                    colors = SearchBarDefaults.colors(
+                        containerColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                ) {
+                }
+            }
+        }
         if(!loading) {
             if (!state.isEmpty()) {
+
                     Text(
                         text = "Latest sales",
                         modifier = Modifier.padding(top = 20.dp, start = 20.dp, end = 20.dp),
@@ -94,7 +137,7 @@ fun HomeScreen(navigateToPlace: (image: String,
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         modifier = Modifier.padding(top = 20.dp, bottom = 20.dp)
                     ) {
-                        items(state!!) { place ->
+                        items(state) { place ->
                             NearYouItem(place, Modifier.shadow(
                                 elevation = 10.dp,
                                 shape = RoundedCornerShape(8.dp))
@@ -106,13 +149,15 @@ fun HomeScreen(navigateToPlace: (image: String,
                     }
 
                     Text(
-                        text = "Based on your preference",
+                        text = "Based on your search",
                         modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                         fontWeight = FontWeight.Bold,
                     )
 
                     LazyColumn(modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 20.dp)) {
-                        items(state!!) { place ->
+                        items(state.filter{
+                            it.title.contains(filter, ignoreCase = true)
+                        }) { place ->
                             RecommendedItem(place, modifier = Modifier
                                 .clickable {
                                     navigateToPlace(place!!.imageUrl!!, place!!.title!!, place!!.price!!, place!!.address!!, place!!.description!!, place!!.seller!!, place!!.email!!)
