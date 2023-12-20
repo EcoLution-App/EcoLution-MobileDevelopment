@@ -141,7 +141,13 @@ fun EcoLutionApp(
 
                 LaunchedEffect(key1 = Unit) {
                     if(googleAuthUiClient.getSignedInUser() != null) {
-                        navController.navigate("profile")
+                        navController.navigate("profile") {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            restoreState = true
+                            launchSingleTop = true
+                        }
                     }
                 }
 
@@ -200,12 +206,30 @@ fun EcoLutionApp(
                             ).show()
                             navController.popBackStack()
                         }
-                    }
+                    },
+                    navigateToPlace = {navController.navigate("Add") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        restoreState = true
+                        launchSingleTop = true
+                    } },
+                    navigateToSales = {navController.navigate("My Sales") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        restoreState = true
+                        launchSingleTop = true
+                    } }
                 )
             }
 
             composable("My Sales") {
-                DeleteScreen(userData = googleAuthUiClient.getSignedInUser(), showToast = { showToast(context, it) })
+                DeleteScreen(userData = googleAuthUiClient.getSignedInUser(), showToast = { showToast(context, it) },
+                    navigateToPlace = { image, title, price, address, description, sellerName, sellerEmail ->
+                        val encodedUrl = URLEncoder.encode(image, StandardCharsets.UTF_8.toString())
+                        navController.navigate("infohome/$encodedUrl/$title/$price/$address/$description/$sellerName/$sellerEmail")
+                    })
             }
 
             composable(route = Screen.Add.route) {

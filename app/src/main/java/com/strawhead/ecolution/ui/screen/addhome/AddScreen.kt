@@ -42,6 +42,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextButton
@@ -53,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.net.toFile
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -174,8 +177,8 @@ fun AddScreen(userData: UserData?,
     }
 
 //        .navigate(Screen.Profile.route)
-    Column (verticalArrangement = Arrangement.Center
-    ){
+    Column (verticalArrangement = Arrangement.Center,
+    modifier = Modifier.verticalScroll(rememberScrollState())){
         Banner(modifier = Modifier.padding(bottom = 10.dp))
         imageUri?.let { uri ->
             // Display the selected image
@@ -217,12 +220,14 @@ fun AddScreen(userData: UserData?,
         )
         OutlinedTextField(
             value = harga,
-            label = { Text("Harga rumah") },
+            label = { Text("Harga rumah (Rp)") },
             maxLines = 1,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            onValueChange = {newInput ->
-                harga = newInput
-                viewModel.changeHargaValue(newInput)
+            onValueChange = { newInput ->
+                if (newInput.isDigitsOnly()) {
+                    harga = newInput
+                    viewModel.changeHargaValue(newInput)
+                }
             },
             modifier = Modifier
                 .padding(start = 20.dp, top = 5.dp, bottom = 5.dp, end = 20.dp)
@@ -269,9 +274,8 @@ fun AddScreen(userData: UserData?,
                 deskripsi = newInput
                 viewModel.changeDeskripsiValue(newInput)
             },
-            maxLines = 2,
+            maxLines = 4,
             modifier = Modifier
-                .defaultMinSize(minHeight = 65.dp)
                 .padding(start = 20.dp, top = 5.dp, bottom = 10.dp, end = 20.dp)
                 .fillMaxWidth()
         )
@@ -280,13 +284,13 @@ fun AddScreen(userData: UserData?,
                 enabled = submitButtonEnable,
                 onClick = {
                     if(savedAddress.value!! != "") {
-                        Log.d("Data rumah -> Nama tempat : ", nama)
-                        Log.d("Data rumah -> Harga : ", harga)
-                        Log.d("Data rumah -> Alamat panjang : ", savedAddress.value!!)
-                        Log.d("Data rumah -> Kecamatan : ", kecamatan.value!!)
-                        Log.d("Data rumah -> Deskripsi : ", deskripsi)
-                        Log.d("Data rumah -> Nama penjual : ", sellerName!!)
-                        Log.d("Data rumah -> Email penjual : ", sellerEmail!!)
+//                        Log.d("Data rumah -> Nama tempat : ", nama)
+//                        Log.d("Data rumah -> Harga : ", harga)
+//                        Log.d("Data rumah -> Alamat panjang : ", savedAddress.value!!)
+//                        Log.d("Data rumah -> Kecamatan : ", kecamatan.value!!)
+//                        Log.d("Data rumah -> Deskripsi : ", deskripsi)
+//                        Log.d("Data rumah -> Nama penjual : ", sellerName!!)
+//                        Log.d("Data rumah -> Email penjual : ", sellerEmail!!)
                         submitButtonEnable = false
                         buttonTitle = "Uploading"
                         imageUri?.let { uri ->

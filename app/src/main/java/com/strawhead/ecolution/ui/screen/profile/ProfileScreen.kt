@@ -3,6 +3,7 @@ package com.strawhead.ecolution.ui.screen.profile
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,7 +57,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun ProfileScreen(userData: UserData?, onSignOut: () -> Unit) {
+fun ProfileScreen(userData: UserData?, onSignOut: () -> Unit, navigateToPlace: () -> Unit, navigateToSales: () -> Unit) {
     val placeOwnedViewModel = viewModel(modelClass = PlaceOwnedViewModel::class.java)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -135,116 +136,120 @@ fun ProfileScreen(userData: UserData?, onSignOut: () -> Unit) {
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .height(230.dp)
-                .width(225.dp)
-                .offset(y = -1f.dp)
-                .clip(RoundedCornerShape(15.dp))
-                .background(color = colorResource(id = R.color.white))
-                .align(Alignment.Center)
-        ) {
-            Column(
+        Column (modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 40.dp, end = 40.dp)
+            .align(Alignment.Center)
+            .padding(top = 180.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp))
+        {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.Center),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .height(230.dp)
+                    .fillMaxWidth()
+                    .offset(y = -1f.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(color = colorResource(id = R.color.white))
             ) {
-                Image(
+                Column(
                     modifier = Modifier
-                        .width(100.dp),
-                    painter = painterResource(id = R.drawable.ic_home),
-                    contentDescription = null
-                )
-                Text(
-                    text = jumlah.toString() + " Place Posted",
-                    fontWeight = FontWeight.Bold,
-                )
+                        .align(Alignment.Center),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        modifier = Modifier
+                            .width(100.dp),
+                        painter = painterResource(id = R.drawable.ic_home),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = jumlah.toString() + " Houses Posted",
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
-        }
-        // Add place
-        Box(
-            modifier = Modifier
-                .padding(top = 300.dp)
-                .height(50.dp)
-                .width(225.dp)
-                .align(Alignment.Center)
-                .clip(RoundedCornerShape(15.dp))
-                .background(color = colorResource(id = R.color.white))
+            // Add place
+            Box(
+                modifier = Modifier
+                    .height(50.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(color = colorResource(id = R.color.white))
+                    .clickable {navigateToPlace()}
+            ) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        modifier = Modifier
+                            .size(20.dp),
+                        painter = painterResource(id = R.drawable.baseline_add_circle_24),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Add house")
+                }
+            }
+            // Add place
+            Box(
+                modifier = Modifier
+                    .height(50.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(color = colorResource(id = R.color.white))
+                    .clickable {navigateToSales()}
+            ) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        modifier = Modifier
+                            .size(20.dp),
+                        painter = painterResource(id = R.drawable.baseline_edit_place_24),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Remove house")
+                }
+            }
+            Button(
+                onClick = onSignOut,
+                colors = ButtonDefaults.buttonColors(Color(0xFF425A75)),
+                modifier = Modifier
+                    .height(50.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(color = Color(0xFF425A75))
+            ) {
+                Text(text = "Sign out")
+            }
 
-        ) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    modifier = Modifier
-                        .size(20.dp),
-                    painter = painterResource(id = R.drawable.baseline_add_circle_24),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(R.string.add_place))
-            }
-        }
-        // Add place
-        Box(
-            modifier = Modifier
-                .padding(top = 420.dp)
-                .height(50.dp)
-                .width(225.dp)
-                .align(Alignment.Center)
-                .clip(RoundedCornerShape(15.dp))
-                .background(color = colorResource(id = R.color.white))
-        ) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    modifier = Modifier
-                        .size(20.dp),
-                    painter = painterResource(id = R.drawable.baseline_edit_place_24),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(R.string.edit_place))
-            }
-        }
-        Button(
-            onClick = onSignOut,
-            colors = ButtonDefaults.buttonColors(Color(0xFF425A75)),
-            modifier = Modifier
-                .height(50.dp)
-                .width(225.dp)
-                .align(Alignment.BottomCenter)
-                .clip(RoundedCornerShape(15.dp))
-                .background(color = Color(0xFF425A75))
-        ) {
-            Text(text = "Sign out")
         }
     }
 }
 
-@Composable
-@Preview
-fun ProfileScreenPreview() {
-    val sampleUserData = UserData(
-        userId = "123",
-        profilePictureUrl = "Image",
-        username = "EcoLution",
-        email = "ecolution@example.com",
-    )
-
-    ProfileScreen(
-        userData = sampleUserData,
-        onSignOut = {}
-    )
-}
+//@Composable
+//@Preview
+//fun ProfileScreenPreview() {
+//    val sampleUserData = UserData(
+//        userId = "123",
+//        profilePictureUrl = "Image",
+//        username = "EcoLution",
+//        email = "ecolution@example.com",
+//    )
+//
+//    ProfileScreen(
+//        userData = sampleUserData,
+//        onSignOut = {}
+//    )
+//}
 
 
 //        Button(onClick = onSignOut) {

@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.strawhead.ecolution"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -103,4 +103,6 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:1.0.0")
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation("co.yml:ycharts:2.1.0")
 }

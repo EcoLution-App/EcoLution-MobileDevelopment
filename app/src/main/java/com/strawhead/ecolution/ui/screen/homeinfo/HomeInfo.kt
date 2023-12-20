@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,6 +45,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.yml.charts.axis.AxisData
+import co.yml.charts.common.model.Point
+import co.yml.charts.ui.linechart.LineChart
+import co.yml.charts.ui.linechart.model.GridLines
+import co.yml.charts.ui.linechart.model.IntersectionPoint
+import co.yml.charts.ui.linechart.model.Line
+import co.yml.charts.ui.linechart.model.LineChartData
+import co.yml.charts.ui.linechart.model.LinePlotData
+import co.yml.charts.ui.linechart.model.LineStyle
+import co.yml.charts.ui.linechart.model.SelectionHighlightPoint
+import co.yml.charts.ui.linechart.model.SelectionHighlightPopUp
+import co.yml.charts.ui.linechart.model.ShadowUnderLine
 import coil.compose.AsyncImage
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -94,6 +107,61 @@ fun HomeInfo(image: String,
     var CityName = alamat?.get(0)?.subAdminArea
     Log.v("log_tag", "CityName " + CityName)
 
+    val steps = 5
+    val pointsData: List<Point> =
+        listOf(
+            Point(2012f, 17f),
+            Point(2013f, 46f),
+            Point(2014f, 17f),
+            Point(2015f, 11f),
+            Point(2016f, 45f),
+            Point(2017f, 30f),
+            Point(2018f, 19f),
+            Point(2019f, 18f),
+            Point(2020f, 19f),
+            Point(2021f, 50f),
+            Point(2022f, 25f),
+            Point(2023f, 35.292301177978516f),
+            Point(2024f, 38.29422378540039f),
+            Point(2025f, 41.36896896362305f),
+        )
+
+    val xAxisData = AxisData.Builder()
+        .axisStepSize(100.dp)
+        .backgroundColor(Color.Blue)
+        .steps(pointsData.size - 1)
+        .labelData { i -> (i+2012).toString() }
+        .labelAndAxisLinePadding(15.dp)
+        .build()
+
+    val yAxisData = AxisData.Builder()
+        .steps(steps)
+        .backgroundColor(Color.Red)
+        .labelAndAxisLinePadding(20.dp)
+        .labelData { i ->
+            val yScale = 100 / steps
+            (i * yScale).toString()
+        }.build()
+
+    val lineChartData = LineChartData(
+        linePlotData = LinePlotData(
+            lines = listOf(
+                Line(
+                    dataPoints = pointsData,
+                    LineStyle(),
+                    IntersectionPoint(),
+                    SelectionHighlightPoint(),
+                    ShadowUnderLine(),
+                    SelectionHighlightPopUp()
+                )
+            ),
+        ),
+        xAxisData = xAxisData,
+        yAxisData = yAxisData,
+        gridLines = GridLines(),
+        backgroundColor = Color.White
+    )
+
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
         sheetContainerColor = Color.White,
@@ -127,7 +195,36 @@ fun HomeInfo(image: String,
                     modifier = Modifier
                         .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
                 )
-                Divider(color = Color.Black, thickness = 1.dp)
+                Divider(color = Color(0xffeae5e7), thickness = 1.dp)
+                Text(
+                    text = "Seller Contacts",
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .padding(start = 16.dp, bottom = 10.dp, end = 10.dp, top = 10.dp)
+                )
+                Row {
+                    Text(
+                        text = sellerName,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
+                            .width(150.dp)
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = sellerEmail,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
+                    )
+                }
+                LineChart(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    lineChartData = lineChartData
+                )
+
             }
         },
         sheetPeekHeight = 150.dp,

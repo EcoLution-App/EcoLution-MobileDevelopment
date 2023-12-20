@@ -65,7 +65,14 @@ fun Banner(
 }
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun DeleteScreen(userData: UserData?, showToast: (String) -> Unit) {
+fun DeleteScreen(userData: UserData?, showToast: (String) -> Unit,
+                 navigateToPlace: (image: String,
+                                   title: String,
+                                   price: String,
+                                   address: String,
+                                   description: String,
+                                   sellerName: String,
+                                   sellerEmail: String) -> Unit) {
     val homeViewModel = viewModel(modelClass = HomeScreenViewModel::class.java)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -92,7 +99,7 @@ fun DeleteScreen(userData: UserData?, showToast: (String) -> Unit) {
                             RecommendedItem(place, modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-    //                                navigateToPlace(place!!.imageUrl!!, place!!.title!!, place!!.price!!, place!!.address!!, place!!.description!!, place!!.seller!!, place!!.email!!)
+                                    navigateToPlace(place!!.imageUrl!!, place!!.title!!, place!!.price!!, place!!.address!!, place!!.description!!, place!!.seller!!, place!!.email!!)
                                 }
                             , delete = {id ->
                                     scope.launch {
