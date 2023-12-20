@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +48,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import co.yml.charts.axis.AxisData
+import co.yml.charts.common.extensions.isNotNull
 import co.yml.charts.common.model.Point
 import co.yml.charts.ui.linechart.LineChart
 import co.yml.charts.ui.linechart.model.GridLines
@@ -67,6 +72,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.strawhead.ecolution.R
 import com.strawhead.ecolution.ui.screen.addhome.LocationDataStore
+import com.strawhead.ecolution.ui.screen.home.HomeScreenViewModel
 import com.strawhead.ecolution.ui.tempmodel.PlaceInfo
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -97,7 +103,9 @@ fun HomeInfo(image: String,
              sellerEmail: String) {
     val myIndonesianLocale = Locale("in", "ID")
     val format: NumberFormat = NumberFormat.getCurrencyInstance(myIndonesianLocale)
-
+    val homeInfoViewModel = viewModel(modelClass = HomeInfoViewModel::class.java)
+    val state by homeInfoViewModel.state.collectAsState()
+    val loading by homeInfoViewModel.loading.collectAsState()
     val context = LocalContext.current
 
     var geocoder = Geocoder(context, Locale.getDefault())
@@ -105,69 +113,15 @@ fun HomeInfo(image: String,
     var latitude = alamat?.get(0)?.latitude
     var longitude = alamat?.get(0)?.longitude
     var CityName = alamat?.get(0)?.subAdminArea
-    Log.v("log_tag", "CityName " + CityName)
-
-    val steps = 5
-    val pointsData: List<Point> =
-        listOf(
-            Point(2012f, 17f),
-            Point(2013f, 46f),
-            Point(2014f, 17f),
-            Point(2015f, 11f),
-            Point(2016f, 45f),
-            Point(2017f, 30f),
-            Point(2018f, 19f),
-            Point(2019f, 18f),
-            Point(2020f, 19f),
-            Point(2021f, 50f),
-            Point(2022f, 25f),
-            Point(2023f, 35.292301177978516f),
-            Point(2024f, 38.29422378540039f),
-            Point(2025f, 41.36896896362305f),
-        )
-
-    val xAxisData = AxisData.Builder()
-        .axisStepSize(100.dp)
-        .backgroundColor(Color.Blue)
-        .steps(pointsData.size - 1)
-        .labelData { i -> (i+2012).toString() }
-        .labelAndAxisLinePadding(15.dp)
-        .build()
-
-    val yAxisData = AxisData.Builder()
-        .steps(steps)
-        .backgroundColor(Color.Red)
-        .labelAndAxisLinePadding(20.dp)
-        .labelData { i ->
-            val yScale = 100 / steps
-            (i * yScale).toString()
-        }.build()
-
-    val lineChartData = LineChartData(
-        linePlotData = LinePlotData(
-            lines = listOf(
-                Line(
-                    dataPoints = pointsData,
-                    LineStyle(),
-                    IntersectionPoint(),
-                    SelectionHighlightPoint(),
-                    ShadowUnderLine(),
-                    SelectionHighlightPopUp()
-                )
-            ),
-        ),
-        xAxisData = xAxisData,
-        yAxisData = yAxisData,
-        gridLines = GridLines(),
-        backgroundColor = Color.White
-    )
+    Log.v("log_tag", "CityName " + CityName!!.uppercase())
+    homeInfoViewModel.reload(CityName!!.uppercase())
 
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
         sheetContainerColor = Color.White,
         scaffoldState = scaffoldState,
         sheetContent = {
-            Column () {
+            Column (modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Divider(color = Color(0xffeae5e7), thickness = 1.dp)
                 Text(
                     text = title,
@@ -218,12 +172,84 @@ fun HomeInfo(image: String,
                             .padding(start = 16.dp, bottom = 10.dp, end = 10.dp)
                     )
                 }
-                LineChart(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp),
-                    lineChartData = lineChartData
-                )
+                Divider(color = Color(0xffeae5e7), thickness = 1.dp)
+                if(!loading) {
+                    if(state.isNotNull() && state!!.combinedValuesY.isNotNull()) {
+                        Log.v("hasil ml", state!!.combinedValuesY.toString())
+                        Text(
+                            text = "Prediksi jumlah kejadian banjir per tahun",
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, bottom = 10.dp, end = 10.dp, top = 20.dp)
+                        )
+                        val steps = 5
+                        val pointsData: List<Point> =
+                            listOf(
+                                Point(2012f, state!!.combinedValuesY!!.get(0)!!),
+                                Point(2013f, state!!.combinedValuesY!!.get(1)!!),
+                                Point(2014f, state!!.combinedValuesY!!.get(2)!!),
+                                Point(2015f, state!!.combinedValuesY!!.get(3)!!),
+                                Point(2016f, state!!.combinedValuesY!!.get(4)!!),
+                                Point(2017f, state!!.combinedValuesY!!.get(5)!!),
+                                Point(2018f, state!!.combinedValuesY!!.get(6)!!),
+                                Point(2019f, state!!.combinedValuesY!!.get(7)!!),
+                                Point(2020f, state!!.combinedValuesY!!.get(8)!!),
+                                Point(2021f, state!!.combinedValuesY!!.get(9)!!),
+                                Point(2022f, state!!.combinedValuesY!!.get(10)!!),
+                                Point(2023f, state!!.combinedValuesY!!.get(11)!!),
+                                Point(2024f, state!!.combinedValuesY!!.get(12)!!),
+                                Point(2025f, state!!.combinedValuesY!!.get(13)!!),
+                            )
+
+                        val xAxisData = AxisData.Builder()
+                            .axisStepSize(100.dp)
+                            .backgroundColor(Color.White)
+                            .steps(pointsData.size - 1)
+                            .labelData { i -> (i+2012).toString() }
+                            .labelAndAxisLinePadding(15.dp)
+                            .build()
+
+                        val yAxisData = AxisData.Builder()
+                            .steps(steps)
+                            .backgroundColor(Color.White)
+                            .labelAndAxisLinePadding(20.dp)
+                            .labelData { i ->
+                                val yScale = state!!.combinedValuesY!!.max() / steps.toFloat()
+                                (i * yScale).toString().take(3)
+                            }.build()
+
+                        val lineChartData = LineChartData(
+                            linePlotData = LinePlotData(
+                                lines = listOf(
+                                    Line(
+                                        dataPoints = pointsData,
+                                        LineStyle(),
+                                        IntersectionPoint(),
+                                        SelectionHighlightPoint(),
+                                        ShadowUnderLine(),
+                                        SelectionHighlightPopUp()
+                                    )
+                                ),
+                            ),
+                            xAxisData = xAxisData,
+                            yAxisData = yAxisData,
+                            gridLines = GridLines(),
+                            backgroundColor = Color.White
+                        )
+
+                        LineChart(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp),
+                            lineChartData = lineChartData
+                        )
+
+                    }
+                }
+
+
 
             }
         },
@@ -261,20 +287,7 @@ fun HomeInfo(image: String,
                     .align(Alignment.BottomStart)
             )
             Banner()
-    //        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-    //            Card (
-    //                shape = MaterialTheme.shapes.medium,
-    //                colors = CardDefaults.cardColors(
-    //                    containerColor = Color.White,
-    //                ),
-    //                modifier = Modifier
-    //                    .advancedShadow(shadowBlurRadius = 5.dp)
-    //                    .clip(RoundedCornerShape(12.dp))
-    //            ) {
-    //
-    //            }
-    //
-    //        }
+
         }
 
     }
