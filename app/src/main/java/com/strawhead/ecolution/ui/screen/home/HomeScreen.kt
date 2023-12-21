@@ -137,7 +137,7 @@ fun HomeScreen(navigateToPlace: (image: String,
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         modifier = Modifier.padding(top = 20.dp, bottom = 20.dp)
                     ) {
-                        items(state) { place ->
+                        items(state.asReversed()) { place ->
                             NearYouItem(place, Modifier.shadow(
                                 elevation = 10.dp,
                                 shape = RoundedCornerShape(8.dp))
@@ -278,7 +278,7 @@ fun NearYouItem(
                 if (place!!.title!!.length > 15) {
                     Text(
                         text = place!!.title!!.take(13)+"..",
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold
@@ -287,7 +287,7 @@ fun NearYouItem(
                 } else {
                     Text(
                         text = place!!.title!!,
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold
